@@ -1,17 +1,16 @@
 use anyhow::Result;
 use clap::{CommandFactory, Parser};
 use manager::torrent_manager;
-use std::cmp::min;
 use std::env::current_dir;
 use std::path::Path;
 use std::process::exit;
 use std::{fmt, fs};
-
 use torrent_manager::TorrentManager;
 
 #[cfg(unix)]
 use rlimit::{Resource, getrlimit, setrlimit};
-
+#[cfg(unix)]
+use std::cmp::min;
 
 mod bencoding;
 mod dht;
@@ -78,6 +77,7 @@ impl fmt::Display for LogLevels {
     }
 }
 
+#[cfg(unix)]
 const MAX_OPENED_FILES: u64 = 16384;
 
 #[tokio::main]
@@ -94,9 +94,9 @@ async fn main() -> Result<()> {
     #[cfg(unix)]
     {
         let (soft_limit, hard_limit) =
-            rlimit::getrlimit(Resource::NOFILE).expect("could not read current NOFILE ulimit");
+            getrlimit(Resource::NOFILE).expect("could not read current NOFILE ulimit");
         if soft_limit < MAX_OPENED_FILES {
-            rlimit::setrlimit(
+            setrlimit(
                 Resource::NOFILE,
                 min(hard_limit, MAX_OPENED_FILES),
                 hard_limit,
