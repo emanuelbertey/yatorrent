@@ -1,7 +1,6 @@
 use anyhow::Result;
 use clap::{CommandFactory, Parser};
 use manager::torrent_manager;
-use rlimit::{Resource, getrlimit, setrlimit};
 use std::cmp::min;
 use std::env::current_dir;
 use std::path::Path;
@@ -9,6 +8,10 @@ use std::process::exit;
 use std::{fmt, fs};
 
 use torrent_manager::TorrentManager;
+
+#[cfg(unix)]
+use rlimit::{Resource, getrlimit, setrlimit};
+
 
 mod bencoding;
 mod dht;
@@ -88,15 +91,18 @@ async fn main() -> Result<()> {
     );
 
     // bump ulimit if needed
-    let (soft_limit, hard_limit) =
-        getrlimit(Resource::NOFILE).expect("could not read current NOFILE ulimit");
-    if soft_limit < MAX_OPENED_FILES {
-        setrlimit(
-            Resource::NOFILE,
-            min(hard_limit, MAX_OPENED_FILES),
-            hard_limit,
-        )
-        .expect("could not increase NOFILE ulimit");
+    #[cfg(unix)]
+    {
+        let (soft_limit, hard_limit) =
+            rlimit::getrlimit(Resource::NOFILE).expect("could not read current NOFILE ulimit");
+        if soft_limit < MAX_OPENED_FILES {
+            rlimit::setrlimit(
+                Resource::NOFILE,
+                min(hard_limit, MAX_OPENED_FILES),
+                hard_limit,
+            )
+            .expect("could not increase NOFILE ulimit");
+        }
     }
 
     // read torrent file and start manager
