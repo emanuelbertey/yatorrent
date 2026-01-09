@@ -937,7 +937,7 @@ impl DhtManager {
             self.find_node(
                 to_addr_string(&remote_ipv4addr, remote_port),
                 socket,
-                queried_node_id,
+                random_close_node_id,
             )
             .await;
         }
