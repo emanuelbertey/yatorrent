@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 use std::{iter, path::Path};
 
-use rand::Rng;
+use rand::RngExt;
 use rand::seq::IndexedRandom;
 use size::{Size, Style};
 use tokio::net::TcpStream;
@@ -1417,7 +1417,7 @@ impl TorrentManager {
                 self.max_connected_peers - current_peers_n
             );
             let candidates_for_new_connections: Vec<_> = possible_peers
-                .choose_multiple(&mut rand::rng(), self.max_connected_peers - current_peers_n)
+                .sample(&mut rand::rng(), self.max_connected_peers - current_peers_n)
                 .collect();
             // todo: better algorithm to select new peers
             for (_, (peer, _)) in candidates_for_new_connections.iter() {

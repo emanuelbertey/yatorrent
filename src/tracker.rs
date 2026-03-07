@@ -114,7 +114,7 @@ impl TrackerClient {
         let mut randomized_tiers: Vec<Vec<String>> = Vec::new();
         for tier in trackers_url {
             let randomized_tier = tier
-                .choose_multiple(&mut rand::rng(), tier.len())
+                .sample(&mut rand::rng(), tier.len())
                 .map(|e| e.clone())
                 .collect();
             randomized_tiers.push(randomized_tier);

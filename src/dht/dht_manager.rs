@@ -12,7 +12,7 @@ use tokio::{
     sync::mpsc::{self, Receiver, Sender},
 };
 
-use rand::Rng;
+use rand::RngExt;
 
 use crate::{
     dht::{
